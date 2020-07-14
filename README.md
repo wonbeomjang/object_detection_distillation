@@ -1,3 +1,10 @@
+# object detection distillation
+re-implemtation of Distilling Object Detectors with Fine-grained Feature Imitation
+
+Implementation is on going.  
+Please wait.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # yolo v2 vgg16 pytorch
 
 :octocat: re-implementation of yolo v2 detection using torchvision vgg16 bn model.
