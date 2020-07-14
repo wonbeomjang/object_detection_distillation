@@ -141,6 +141,13 @@ class Yolo_Loss(nn.Module):
         return loss1 + loss2 + loss3 + loss4 + loss5, (loss1, loss2, loss3, loss4, loss5)
 
 
+def imitation_loss(student, teacher, mask):
+    diff = torch.pow(student - teacher, 2) * mask
+    diff = diff.sum() / mask.sum() / 2
+
+    return diff
+
+
 if __name__ == '__main__':
     image = torch.randn([5, 3, 416, 416])
     pred = torch.zeros([5, 13, 13, 125])  # batch, 13, 13, etc...

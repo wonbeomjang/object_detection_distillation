@@ -146,3 +146,35 @@ def make_pred_bbox(preds, conf_threshold=0.35):
     return image_boxes, image_labels, image_scores
 
 
+# def bbox_overlap(anchors: torch.Tensor, gt_boxes: torch.Tensor):
+#     """
+#     anchor: (B, N, 4)
+#     gt_boxes: (B, K, 4)
+#     """
+#     B = anchors.size(0)
+#     N = anchors.size(1)
+#     K = gt_boxes.size(1)
+#
+#     anchor_x = anchors[:, :, 0] - anchors[:, :, 2]
+#     anchor_y = anchors[:, :, 1] - anchors[:, :, 3]
+#     anchors_area = (anchor_x * anchor_y).view(B, N, 1)
+#
+#     gt_boxes_x = gt_boxes[:, :, 0] - gt_boxes[:, :, 2]
+#     gt_boxes_y = gt_boxes[:, :, 1] - gt_boxes[:, :, 3]
+#     gt_boxes_area= (gt_boxes_x * gt_boxes_y).view(B, 1, K)
+#
+#     reshaped_anchors = anchors.view(B, N, 1, 4).expand(B, N, K, 4)
+#     reshaped_gt_boxes = gt_boxes.view(B, 1, K, 4).expand(B, N, K, 4)
+#
+#     intersected_w = torch.min(reshaped_anchors[:, :, :, 2], reshaped_gt_boxes[:, :, :, 2]) - torch.min(reshaped_anchors[:, :, :, 0], reshaped_gt_boxes[:, :, :, 0])
+#     intersected_w = intersected_w.clamp(min=0)
+#
+#     intersected_h = torch.min(reshaped_anchors[:, :, :, 3], reshaped_gt_boxes[:, :, :, 3]) - torch.min(reshaped_anchors[:, :, :, 1], reshaped_gt_boxes[:, :, :, 1])
+#     intersected_h = intersected_h.clamp(min=0)
+#
+#     intersected_area = intersected_w * intersected_h
+#     union_area = gt_boxes_area + anchors_area - intersected_area
+#
+#     return intersected_area / union_area  # (B, N, K)
+#
+#

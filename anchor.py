@@ -4,14 +4,11 @@ import torch
 
 def make_center_anchors(anchors_wh, grid_size=13):
 
-    grid_arange = np.arange(grid_size)
-    xx, yy = np.meshgrid(grid_arange, grid_arange)  # + 0.5  # grid center, [fmsize*fmsize,2]
-    m_grid = np.concatenate([np.expand_dims(xx, axis=-1), np.expand_dims(yy, -1)], axis=-1) + 0.5
-    m_grid = m_grid
-    xy = torch.from_numpy(m_grid)
+    grid_arange = torch.arange(grid_size)
+    xx, yy = torch.meshgrid(grid_arange, grid_arange)  # + 0.5  # grid center, [fmsize*fmsize,2]
+    xy = torch.cat((torch.unsqueeze(xx, -1), torch.unsqueeze(yy, -1)), -1) + 0.5
 
-    anchors_wh = np.array(anchors_wh)  # numpy 로 변경
-    wh = torch.from_numpy(anchors_wh)
+    wh = torch.tensor(anchors_wh)
 
     xy = xy.view(grid_size, grid_size, 1, 2).expand(grid_size, grid_size, 5, 2).type(torch.float32)  # centor
     wh = wh.view(1, 1, 5, 2).expand(grid_size, grid_size, 5, 2).type(torch.float32)  # w, h
