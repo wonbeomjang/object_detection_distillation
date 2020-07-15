@@ -55,19 +55,19 @@ class YOLO(nn.Module, metaclass=ABCMeta):
         """
         out_size = x.size(2)
         batch_size = x.size(0)
-        num_obj = gt_boxes.size(1)
 
         center_anchors = make_center_anchors(anchors_wh=self.anchors, grid_size=out_size)
         anchors = center_to_corner(center_anchors).view(out_size * out_size * 5, 4)  # (N, 4)
-        gt_boxes = gt_boxes * float(out_size)
+        gt_boxes = gt_boxes
 
         mask_batch = torch.zeros([batch_size, out_size, out_size])
 
-        if not num_obj:
-            return mask_batch
-
         for i in range(batch_size):
-            IOU_map = find_jaccard_overlap(anchors, gt_boxes[i], 0).view(out_size, out_size, self.num_anchors, num_obj)
+            num_obj = gt_boxes[i].size(0)
+            if not num_obj:
+                continue
+
+            IOU_map = find_jaccard_overlap(anchors, gt_boxes[i] * float(out_size), 0).view(out_size, out_size, self.num_anchors, num_obj)
             max_iou, _ = IOU_map.view(-1, num_obj).max(dim=0)
             mask_img = torch.zeros([out_size, out_size], dtype=torch.int64, requires_grad=False).type_as(x)
             threshold: torch.Tensor = max_iou * iou_factor
@@ -141,9 +141,8 @@ class YOLO_VGG_11(YOLO):
 
 
 if __name__ == '__main__':
-    image = torch.randn([1, 3, 416, 416]).cuda()
-    anchor = torch.tensor([[[0.3, 0.3, 0.6, 0.6], [0.1, 0.1, 0.4, 0.4]]]).cuda()
-    print(anchor.shape)
+    image = torch.randn([2, 3, 416, 416]).cuda()
+    anchor = [torch.tensor([[0.3, 0.3, 0.6, 0.6], [0.1, 0.1, 0.4, 0.4]]).cuda(), torch.tensor([[0.1, 0.1, 0.4, 0.4]]).cuda()]
     #
     # model = YOLO_VGG_11().cuda()
     # print("num_params : ", model.count_parameters())
@@ -161,12 +160,12 @@ if __name__ == '__main__':
     print(feature.shape)
     print(mask.shape)
 
-    corners = anchor * feature.size(2)
-    centers = corner_to_center(corners)
-
-    plt.imshow(mask.squeeze().cpu(), cmap='gray')
+    plt.imshow(mask[1].squeeze().cpu(), cmap='gray')
     ax = plt.gca()
-    for center, corner in zip(centers[0], corners[0]):
+    for corner in anchor[1]:
+        center = corner_to_center(corner)
+        center *= feature.size(2)
+        corner *= feature.size(2)
         rect = patches.Rectangle((corner[0], corner[1]), center[2], center[3], linewidth=1, edgecolor='r', facecolor='none')
         ax.add_patch(rect)
     plt.show()
